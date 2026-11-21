@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -99,6 +100,10 @@ func main() {
 	if *instanceFile != "" {
 		if b, err := os.ReadFile(*instanceFile); err == nil && len(b) == 36 {
 			uid = uuid.MustParse(strings.TrimSpace(string(b)))
+		}
+		// the directory may legitimately not exist until the first boot
+		if err := os.MkdirAll(filepath.Dir(*instanceFile), 0o755); err != nil {
+			fmt.Fprintf(os.Stderr, "falco-opamp: create uid dir: %v\n", err)
 		}
 		if err := os.WriteFile(*instanceFile, []byte(uid.String()), 0o600); err != nil {
 			fmt.Fprintf(os.Stderr, "falco-opamp: persist instance uid: %v\n", err)
