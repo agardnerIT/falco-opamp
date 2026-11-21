@@ -74,6 +74,14 @@ func main() {
 		fmt.Fprintf(os.Stderr, "falco-opamp: %v\n", err)
 		os.Exit(1)
 	}
+	if err := store.EnsurePaths(); err != nil {
+		fmt.Fprintf(os.Stderr, "falco-opamp: %v\n", err)
+		os.Exit(1)
+	}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "falco-opamp: %v\n", err)
+		os.Exit(1)
+	}
 
 	client := falco.New(*webserver, *controlSocket)
 	if !client.CanReload(ctx) {

@@ -110,6 +110,18 @@ func (s *Store) Write(configBody, rulesBody []byte) error {
 	return nil
 }
 
+// EnsurePaths creates the directories the owned files live in. The rules
+// directory may legitimately not exist until the first rules push.
+func (s *Store) EnsurePaths() error {
+	for _, p := range []string{s.configPath, s.rulesPath} {
+		dir := filepath.Dir(p)
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return fmt.Errorf("ensure %s: %w", dir, err)
+		}
+	}
+	return nil
+}
+
 // Withdraw restores the on-disk state the sidecar found at startup: the spec
 // has no "delete config" message, and a falco.yaml is mandatory (rules,
 // outputs), so the withdrawal answer is the startup snapshot, not an empty

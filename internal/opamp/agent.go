@@ -140,6 +140,7 @@ func (a *Agent) onMessage(ctx context.Context, msg *types.MessageData) {
 		return
 	}
 	status := a.applyRemoteConfig(ctx, msg.RemoteConfig)
+	status.LastRemoteConfigHash = msg.RemoteConfig.GetConfigHash()
 	if err := a.client.SetRemoteConfigStatus(status); err != nil {
 		a.logError("report status: %v", err)
 	}
