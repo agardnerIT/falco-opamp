@@ -49,8 +49,13 @@ func (a *Agent) Start(ctx context.Context, endpoint string, headers map[string]s
 	a.instanceID = instanceID
 	log := stderrLogger{}
 
-	ws := client.NewWebSocket(log)
-	a.client = ws
+	if strings.HasPrefix(endpoint, "ws") {
+		// ws(s):// lets the server push without waiting for a poll.
+		a.client = client.NewWebSocket(stderrLogger{})
+	} else {
+		// http(s):// polls; works against any OpAMP server.
+		a.client = client.NewHTTP(stderrLogger{})
+	}
 
 	desc, err := a.describe(ctx)
 	if err != nil {
@@ -83,13 +88,13 @@ func (a *Agent) Start(ctx context.Context, endpoint string, headers map[string]s
 		settings.HeartbeatInterval = &heartbeat
 	}
 
-	if err := ws.SetAgentDescription(desc); err != nil {
+	if err := a.client.SetAgentDescription(desc); err != nil {
 		return err
 	}
-	if err := ws.SetHealth(a.falcoHealth(ctx)); err != nil {
+	if err := a.client.SetHealth(a.falcoHealth(ctx)); err != nil {
 		return err
 	}
-	return ws.Start(ctx, settings)
+	return a.client.Start(ctx, settings)
 }
 
 func (a *Agent) Stop(ctx context.Context) error {
