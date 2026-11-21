@@ -31,7 +31,7 @@ func TestValidateRulesWithFakeFalco(t *testing.T) {
 	if err := os.WriteFile(cfg, []byte("rules_files:\n  - "+rules+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	store, err := NewStore(cfg, rules)
+	store, err := NewStore(cfg, rules, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestValidateRulesReportsFalcoError(t *testing.T) {
 	if err := os.WriteFile(cfg, []byte("rules_files:\n  - "+rules+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	store, err := NewStore(cfg, rules)
+	store, err := NewStore(cfg, rules, true)
 	if err != nil {
 		t.Fatal(err)
 	}

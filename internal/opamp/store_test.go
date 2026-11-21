@@ -24,7 +24,7 @@ func newStore(t *testing.T, configBody, rulesBody string) *Store {
 			t.Fatal(err)
 		}
 	}
-	s, err := NewStore(cfg, rules)
+	s, err := NewStore(cfg, rules, true)
 	if err != nil {
 		t.Fatal(err)
 	}

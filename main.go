@@ -47,6 +47,7 @@ func main() {
 		heartbeat     = flag.Duration("heartbeat", 30*time.Second, "OpAMP heartbeat interval (ws transport)")
 		falcoBin      = flag.String("falco-bin", "", "path to a falco binary; pushes are pre-checked with `falco --validate` when set")
 		instanceFile  = flag.String("instance-uid-file", "", "file to persist the instance uid across restarts (default: ephemeral)")
+		requireRC     = flag.Bool("require-reload-control", true, "refuse pushes that set reload_control.enabled=false; set false when falco is started with -o reload_control.enabled=true (the file may then say false by construction)")
 	)
 	flag.Var(&headers, "header", "extra HTTP header for the OpAMP server, e.g. --header 'Authorization: Bearer <token>'; repeatable")
 	flag.Parse()
@@ -68,7 +69,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	store, err := opamp.NewStore(*configPath, *rulesPath)
+	store, err := opamp.NewStore(*configPath, *rulesPath, *requireRC)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "falco-opamp: %v\n", err)
 		os.Exit(1)

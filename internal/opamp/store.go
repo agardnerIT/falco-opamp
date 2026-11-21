@@ -23,12 +23,19 @@ type Store struct {
 	configPath string // the main config file the sidecar owns, e.g. /etc/falco/falco.yaml
 	rulesPath  string // the managed rules file, referenced by `rules_files` in the config
 
+	// requireReloadControl refuses pushes that set reload_control.enabled
+	// false. It is false for deployments where Falco was started with
+	// `-o reload_control.enabled=true`: the file then disagrees with the
+	// running process by construction, and enforcing the file would refuse
+	// every push. The operator asserts the process override with a flag.
+	requireReloadControl bool
+
 	snapshotConfig []byte // on-disk content at startup; the withdrawal target
 	snapshotRules  []byte
 }
 
-func NewStore(configPath, rulesPath string) (*Store, error) {
-	s := &Store{configPath: configPath, rulesPath: rulesPath}
+func NewStore(configPath, rulesPath string, requireReloadControl bool) (*Store, error) {
+	s := &Store{configPath: configPath, rulesPath: rulesPath, requireReloadControl: requireReloadControl}
 	s.snapshotConfig, _ = os.ReadFile(configPath) // missing is fine: nothing to restore
 	s.snapshotRules, _ = os.ReadFile(rulesPath)
 	if s.snapshotConfig == nil {
@@ -54,8 +61,10 @@ func (s *Store) validate(configBody []byte, rules bool) error {
 	if err := yaml.Unmarshal(configBody, &doc); err != nil {
 		return fmt.Errorf("falco.yaml does not parse as YAML: %w", err)
 	}
-	if enabled, err := boolSetting(doc, "reload_control", "enabled"); err != nil || !enabled {
-		return fmt.Errorf("%w: reload_control.enabled must be true in the pushed falco.yaml", ErrBrickControl)
+	if s.requireReloadControl {
+		if enabled, err := boolSetting(doc, "reload_control", "enabled"); err != nil || !enabled {
+			return fmt.Errorf("%w: reload_control.enabled must be true in the pushed falco.yaml", ErrBrickControl)
+		}
 	}
 	if enabled, _ := boolSetting(doc, "webserver", "enabled"); !enabled && s.needsWebserver() {
 		return fmt.Errorf("%w: webserver.enabled must be true when no control socket is configured", ErrBrickControl)

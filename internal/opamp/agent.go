@@ -82,6 +82,7 @@ func (a *Agent) Start(ctx context.Context, endpoint string, headers map[string]s
 		},
 		RemoteConfigStatus: &protobufs.RemoteConfigStatus{}, // forces the server to re-offer config
 		Capabilities: protobufs.AgentCapabilities_AgentCapabilities_AcceptsRemoteConfig |
+			protobufs.AgentCapabilities_AgentCapabilities_ReportsRemoteConfig |
 			protobufs.AgentCapabilities_AgentCapabilities_ReportsHealth |
 			protobufs.AgentCapabilities_AgentCapabilities_ReportsEffectiveConfig,
 	}
