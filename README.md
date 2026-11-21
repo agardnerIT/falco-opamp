@@ -1,6 +1,8 @@
 # falco-opamp
 
 ![Warning: Entirely vibecoded](https://img.shields.io/badge/Warning-Entirely%20vibecoded-orange?style=for-the-badge)
+[![Falco supported by opamp-server-py](https://img.shields.io/badge/Falco-supported-blue?logo=falco)](https://github.com/agardnerIT/opamp-server-py)
+[![tested against Falco 0.45.2](https://img.shields.io/badge/tested%20against-Falco%200.45.2-green)](https://github.com/falcosecurity/falco/releases/tag/v0.45.2)
 
 An OpAMP agent for Falco, delivered as an **external sidecar**.
 
@@ -92,18 +94,36 @@ protocol and double-incrementing generations.
 
 ## Status
 
-Working MVP, tested against a real `falco` 0.45.2 container (reload cycle,
-rejection path, `/versions`, `/healthz` captured live — see
-[the capture notes](https://github.com/agardnerIT/opamp-server-py/blob/main/falco-scope.md)).
+**Working end to end.** Verified live against a real `falcosecurity/falco`
+0.45.2 container and [opamp-server-py](https://github.com/agardnerIT/opamp-server-py),
+which carries the matching `falco` profile: the agent registers as `falco`
+(not `generic`), a server push lands as `falco.yaml` + `rules.yaml`, the reload
+control API applies it (`applied_generation` advances, `ready=true`), and the
+agent reports `APPLIED` back — the whole propose → apply → confirm round trip.
+Rejected configs are verified live too: Falco keeps the previous config running
+and the sidecar reports `FAILED` honestly.
 
-Not yet: end-to-end tests against a live OpAMP server, snapshot persistence
-across sidecar restarts, the `falcoctl` package-management phase.
+| OpAMP server support | |
+|---|---|
+| [opamp-server-py](https://github.com/agardnerIT/opamp-server-py) | ✅ profile included, push verified live |
+| Any standard-OpAMP server | ✅ protocol-level; config keys are this sidecar's contract |
+
+Known wrinkles (logged, not fixed): the `CanReload` startup probe triggers one
+harmless real reload; the server UI shows the raw enum string
+(`RemoteConfigStatuses_APPLIED`) for remote config status; snapshot persistence
+across sidecar restarts is memory-only.
+
+Not yet: end-to-end tests against a live OpAMP server in CI, the `falcoctl`
+package-management phase.
 
 ## Requirements
 
 - Falco 0.45.0+ with `reload_control` (Linux; observation-only elsewhere)
 - Go 1.23+
 - `github.com/open-telemetry/opamp-go` (the official OpAMP client)
+- A persistent uid: pass `--instance-uid-file` so a sidecar restart reconnects
+  as the **same agent** — without it every restart registers a new agent until
+  the server's stale-agent reaper removes the ghost
 
 ## Development
 
