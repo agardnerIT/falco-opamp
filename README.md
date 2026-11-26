@@ -1,5 +1,17 @@
 # falco-opamp
 
+> **Archived — superseded by [opamp-falco](https://github.com/agardnerIT/opamp-falco).**
+>
+> This sidecar's product code lives on, ported verbatim into
+> `opamp-falco`, which replaces its hand-rolled OpAMP transport and config
+> store with the shared bridge
+> ([opamp-agent](https://github.com/agardnerIT/opamp-agent)). Same Falco
+> reload/verify behaviour, conformance-verified against a live Falco 0.45.2:
+> **957 lines here → ~280 lines of product code there**, with the OpAMP
+> plumbing deleted rather than ported. `opamp-falco`'s README has the
+> deleted-lines table, the flag mapping and the migration note. This repo
+> stays readable as the pre-port reference; it is not maintained.
+
 ![Warning: Entirely vibecoded](https://img.shields.io/badge/Warning-Entirely%20vibecoded-orange?style=for-the-badge)
 [![Falco supported by opamp-server-py](https://img.shields.io/badge/Falco-supported-blue?logo=falco)](https://github.com/agardnerIT/opamp-server-py)
 [![tested against Falco 0.45.2](https://img.shields.io/badge/tested%20against-Falco%200.45.2-green)](https://github.com/falcosecurity/falco/releases/tag/v0.45.2)
